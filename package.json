@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "build": "netlify deploy --prod",
+    "build": "echo 'Building app for Heroku deployment...'",
     "start": "node server/server.js"
   },
   "author": "",
@@ -16,9 +16,12 @@
     "express": "^4.21.1",
     "express-session": "^1.18.1",
     "mongoose": "^8.8.3",
-    "netlify-cli": "^17.37.2",
     "nodemon": "^3.1.7",
     "serverless-http": "^2.7.0",
     "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": "22.x", 
+    "npm": "10.x" 
   }
 }
