@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
     "build": "echo 'Building app for Heroku deployment...'",
-    "start": "node server/server.js",
+    "start": "node server.js",
     "prestart:prod": "rimraf dist && npm run build", 
     "web": "npm run start"
   },
