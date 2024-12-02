@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
-const connect = require("./schemas");
+const connect = require("../schemas");
 const { WebSocketServer } = require("ws");
 const mongoose = require("mongoose");
 
@@ -52,8 +52,8 @@ app.get("/", (req, res) => {
 });
 
 // API 라우터
-app.use("/member", require("./routes/memberRouter"));
-app.use("/board", require("./routes/boardRouter"));
+app.use("/member", require("../routes/memberRouter"));
+app.use("/board", require("../routes/boardRouter"));
 
 // HTTP 서버 시작
 const server = app.listen(8080, () => {
