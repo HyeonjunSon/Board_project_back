@@ -10,45 +10,39 @@ const pbkdf2 = util.promisify(crypto.pbkdf2);
 // 회원가입
 router.post("/join", async (req, res) => {
   try {
-    // ReCAPTCHA 검증 로직을 제거
-    // const recaptchaResponse = req.body.recaptchaToken;
-    // const secretKey = "your-secret-key";
-    // const recaptchaVerify = await axios.post(
-    //   `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`
-    // );
-    // if (!recaptchaVerify.data.success) {
-    //   return res.json({ message: "ReCAPTCHA verification failed" });
-    // }
-
     let obj = { email: req.body.email };
 
     let user = await User.findOne(obj);
-    console.log(user);
+    console.log("회원가입 요청 유저:", user);
 
     if (user) {
-      res.json({
+      return res.json({
         message: "이메일이 중복되었습니다. 새로운 이메일을 입력해주세요.",
         dupYn: "1",
       });
-    } else {
-      const salt = (await randomBytes(64)).toString("base64");
-      const hashedPassword = (
-        await pbkdf2(req.body.password, salt, 100000, 64, "sha512")
-      ).toString("base64");
-
-      obj = {
-        email: req.body.email,
-        name: req.body.name,
-        password: hashedPassword,
-        salt: salt,
-      };
-
-      user = new User(obj);
-      await user.save();
-      res.json({ message: "회원가입 되었습니다!", dupYn: "0" });
     }
+
+    const salt = (await randomBytes(64)).toString("base64");
+    const hashedPassword = (
+      await pbkdf2(req.body.password, salt, 100000, 64, "sha512")
+    ).toString("base64");
+
+    // 디버깅 로그 추가
+    console.log("회원가입 시 해싱된 비밀번호:", hashedPassword);
+    console.log("회원가입 시 salt 값:", salt);
+
+    obj = {
+      email: req.body.email,
+      name: req.body.name,
+      password: hashedPassword,
+      salt: salt,
+    };
+
+    user = new User(obj);
+    await user.save();
+    res.json({ message: "회원가입 되었습니다!", dupYn: "0" });
   } catch (err) {
-    console.log(err);
+    console.error("회원가입 오류:", err);
     res.json({ message: false });
   }
 });
@@ -59,56 +53,67 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
 
-    if (!user) {
-      res.json({ message: "아이디나 패스워드가 일치하지 않습니다." });
-    } else {
-      const hashedPassword = (
-        await pbkdf2(req.body.password, user.salt, 100000, 64, "sha512")
-      ).toString("base64");
+    console.log("로그인 요청 유저:", user);
 
-      if (hashedPassword === user.password) {
+    if (!user) {
+      return res.json({ message: "아이디나 패스워드가 일치하지 않습니다." });
+    }
+
+    // 비밀번호 해싱
+    const hashedPassword = (
+      await pbkdf2(req.body.password, user.salt, 100000, 64, "sha512")
+    ).toString("base64");
+
+    // 디버깅 로그 추가
+    console.log("로그인 시 입력된 비밀번호:", req.body.password);
+    console.log("로그인 시 해싱된 비밀번호:", hashedPassword);
+    console.log("데이터베이스 저장 비밀번호:", user.password);
+
+    if (hashedPassword === user.password) {
+      console.log("비밀번호 일치: 로그인 성공");
+      await User.updateOne(
+        { email: req.body.email },
+        { $set: { loginCnt: 0 } }
+      );
+      req.session.email = user.email;
+      return res.json({
+        message: "로그인 되었습니다!",
+        _id: user._id,
+        email: user.email,
+      });
+    } else {
+      console.log("비밀번호 불일치: 로그인 실패");
+      const updatedLoginCnt = (user.loginCnt || 0) + 1;
+
+      if (updatedLoginCnt >= 5) {
         await User.updateOne(
           { email: req.body.email },
-          { $set: { loginCnt: 0 } }
+          { $set: { loginCnt: updatedLoginCnt, lockYn: true } }
         );
-        req.session.email = user.email;
         res.json({
-          message: "로그인 되었습니다!",
-          _id: user._id,
-          email: user.email,
+          message:
+            "아이디나 패스워드가 5회 이상 일치하지 않아 계정이 잠겼습니다. 고객센터에 문의 바랍니다.",
         });
       } else {
-        const updatedLoginCnt = user.loginCnt + 1;
-
-        if (updatedLoginCnt >= 5) {
-          await User.updateOne(
-            { email: req.body.email },
-            { $set: { loginCnt: updatedLoginCnt, lockYn: true } }
-          );
-          res.json({
-            message:
-              "아이디나 패스워드가 5회 이상 일치하지 않아 잠겼습니다.\n고객센터에 문의 바랍니다.",
-          });
-        } else {
-          await User.updateOne(
-            { email: req.body.email },
-            { $set: { loginCnt: updatedLoginCnt } }
-          );
-          res.json({
-            message: "아이디나 패스워드가 일치하지 않습니다.",
-          });
-        }
+        await User.updateOne(
+          { email: req.body.email },
+          { $set: { loginCnt: updatedLoginCnt } }
+        );
+        res.json({
+          message: "아이디나 패스워드가 일치하지 않습니다.",
+        });
       }
     }
   } catch (err) {
-    console.log(err);
+    console.error("로그인 오류:", err);
     res.json({ message: "로그인 실패" });
   }
 });
 
+
 // 로그아웃
 router.get("/logout", (req, res) => {
-  console.log("/logout" + req.sessionID);
+  console.log("/logout - 세션 ID:", req.sessionID);
   req.session.destroy(() => {
     res.json({ message: true });
   });
@@ -120,7 +125,7 @@ router.post("/delete", async (req, res) => {
     await User.deleteOne({ _id: req.body._id });
     res.json({ message: true });
   } catch (err) {
-    console.log(err);
+    console.error("회원 삭제 오류:", err);
     res.json({ message: false });
   }
 });
@@ -134,7 +139,7 @@ router.post("/update", async (req, res) => {
     );
     res.json({ message: true });
   } catch (err) {
-    console.log(err);
+    console.error("회원 정보 수정 오류:", err);
     res.json({ message: false });
   }
 });
@@ -146,7 +151,7 @@ router.post("/add", async (req, res) => {
     await user.save();
     res.json({ message: true });
   } catch (err) {
-    console.log(err);
+    console.error("회원 추가 오류:", err);
     res.json({ message: false });
   }
 });
@@ -154,10 +159,10 @@ router.post("/add", async (req, res) => {
 // 전체 회원 목록 가져오기
 router.post("/getAllMember", async (req, res) => {
   try {
-    const user = await User.find({});
-    res.json({ message: user });
+    const users = await User.find({});
+    res.json({ message: users });
   } catch (err) {
-    console.log(err);
+    console.error("회원 목록 가져오기 오류:", err);
     res.json({ message: false });
   }
 });

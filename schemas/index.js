@@ -4,14 +4,13 @@ module.exports = () => {
   const connect = () => {
     mongoose
       .connect("mongodb+srv://Ths1061205:oeRt8MxHHu0c9BnD@hyeonjun.yl4qx.mongodb.net/project?retryWrites=true&w=majority&appName=Hyeonjun", {
-      // .connect("mongodb+srv://Ths1061205:oeRt8MxHHu0c9BnD@hyeonjun.yl4qx.mongodb.net/board?retryWrites=true&w=majority", {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       })
       .then(() => console.log("MongoDB 연결 성공 (게시판 데이터베이스)"))
       .catch((err) => {
         console.error("MongoDB 연결 실패: ", err.message);
-        setTimeout(connect, 300000); // 5초 후 재시도
+        setTimeout(connect, 5000); // 5초 후 재시도
       });
   };
 
@@ -33,6 +32,8 @@ module.exports = () => {
   require("./board");
 };
 
-export default function handler(req, res) {
+const handler = (req, res) => {
   res.status(200).json({ message: "Hello from the backend!" });
-}
+};
+
+

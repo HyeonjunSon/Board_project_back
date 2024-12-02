@@ -18,7 +18,7 @@ mongoose.connection.on("error", (err) => {
 
 // CORS 옵션 설정
 const corsOptions = {
-  origin: true,
+  origin: "http://localhost:3000",
   credentials: true,
 };
 

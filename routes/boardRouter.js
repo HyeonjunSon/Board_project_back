@@ -40,37 +40,50 @@ router.post("/update", async (req, res) => {
 // 게시글 작성
 router.post("/write", async (req, res) => {
   try {
-    console.log("POST /write 요청 데이터: ", req.body); // 요청 데이터 로그
+    console.log("POST /write 요청 데이터:", req.body);
+
+    if (!mongoose.Types.ObjectId.isValid(req.body._id)) {
+      return res.status(400).json({ message: "유효하지 않은 사용자 ID입니다." });
+    }
 
     const obj = {
-      writer: new mongoose.Types.ObjectId(req.body._id), // ObjectId 변환
+      writer: new mongoose.Types.ObjectId(req.body._id),
       title: req.body.title,
       content: req.body.content,
     };
 
-    console.log("MongoDB에 저장할 데이터: ", obj); // 저장 전 데이터 로그
+    console.log("MongoDB에 저장할 데이터:", obj);
 
     const board = new Board(obj);
-    await board.save(); // 데이터 저장
+    await board.save();
     res.json({ message: "게시글이 업로드되었습니다." });
   } catch (err) {
-    console.error("데이터 저장 실패: ", err); // 에러 로그
-    res.status(500).json({ message: "데이터 저장 실패", error: err.message });
+    console.error("데이터 저장 실패:", err); // 디버깅용 에러 로그
+    res.status(500).json({ message: "서버 내부 오류", error: err.message });
   }
 });
+
 
 // 게시글 목록 가져오기
 router.post("/getBoardList", async (req, res) => {
   try {
     const _id = req.body._id;
-    const board = await Board.find({ writer: _id })
-      .sort({ createdAt: -1 }); // 정렬
-    res.json({ list: board });
+
+    if (!mongoose.Types.ObjectId.isValid(_id)) {
+      return res.status(400).json({ message: "유효하지 않은 사용자 ID입니다." });
+    }
+
+    const boards = await Board.find({ writer: _id }).sort({ createdAt: -1 });
+    res.json({ list: boards });
   } catch (err) {
-    console.error(err);
-    res.json({ message: false });
+    console.error("게시글 목록 가져오기 실패:", err);
+    res.status(500).json({
+      message: "게시글 목록 가져오기 실패",
+      error: err.message,
+    });
   }
 });
+
 
 
 // 게시글 상세보기
