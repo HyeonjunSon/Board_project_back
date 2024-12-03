@@ -18,11 +18,16 @@ mongoose.connection.on("error", (err) => {
   console.error("MongoDB 연결 실패: ", err.message);
 });
 
-// CORS 옵션 설정
-// const corsOptions = {
-//   origin: "http://localhost:3000",
-//   credentials: true,
-// };
+//CORS 옵션 설정
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+};
+
+// 미들웨어 설정
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Express 세션 설정
 app.use(
@@ -37,10 +42,6 @@ app.use(
   })
 );
 
-// 미들웨어 설정
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // 요청 디버깅용 미들웨어
 app.use((req, res, next) => {
