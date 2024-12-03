@@ -56,7 +56,7 @@ app.use("/member", require("../routes/memberRouter"));
 app.use("/board", require("../routes/boardRouter"));
 
 // HTTP 서버 시작
-const server = app.listen(8080, () => {
+const server = app.listen(PORT||3000, () => {
   console.log("HTTP server listening on port 8080...");
 });
 
