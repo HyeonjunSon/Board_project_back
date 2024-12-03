@@ -5,6 +5,8 @@ const session = require("express-session");
 const connect = require("../schemas");
 const { WebSocketServer } = require("ws");
 const mongoose = require("mongoose");
+const MongoStore = require("connect-mongo");
+
 
 require("dotenv").config();
 
@@ -42,13 +44,16 @@ app.use(
     resave: false,
     saveUninitialized: true,
     secret: "Hyeonjun",
-    store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL }),
+    store: MongoStore.create({
+      mongoUrl: process.env.DATABASE_URL, // .env 파일에서 DATABASE_URL을 가져옴
+    }),
     cookie: {
       httpOnly: true,
-      secure: true, // 배포 환경에서 HTTPS라면 true로 설정
+      secure: true, // 배포 환경에서 true
     },
   })
 );
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
