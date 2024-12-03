@@ -13,11 +13,11 @@ router.post("/join", async (req, res) => {
     let obj = { email: req.body.email };
 
     let user = await User.findOne(obj);
-    console.log("회원가입 요청 유저:", user);
+    console.log("User requesting membership:", user);
 
     if (user) {
       return res.json({
-        message: "이메일이 중복되었습니다. 새로운 이메일을 입력해주세요.",
+        message: "Email is duplicated Please enter a new email.",
         dupYn: "1",
       });
     }
@@ -28,8 +28,8 @@ router.post("/join", async (req, res) => {
     ).toString("base64");
 
     // 디버깅 로그 추가
-    console.log("회원가입 시 해싱된 비밀번호:", hashedPassword);
-    console.log("회원가입 시 salt 값:", salt);
+    console.log("Hashed password at membership registration:", hashedPassword);
+    console.log("Salt value at the time of membership registration:", salt);
 
     obj = {
       email: req.body.email,
@@ -40,9 +40,9 @@ router.post("/join", async (req, res) => {
 
     user = new User(obj);
     await user.save();
-    res.json({ message: "회원가입 되었습니다!", dupYn: "0" });
+    res.json({ message: "You have registered as a member!", dupYn: "0" });
   } catch (err) {
-    console.error("회원가입 오류:", err);
+    console.error("Sign up error:", err);
     res.json({ message: false });
   }
 });
@@ -53,10 +53,10 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
 
-    console.log("로그인 요청 유저:", user);
+    console.log("Login Request User:", user);
 
     if (!user) {
-      return res.json({ message: "아이디나 패스워드가 일치하지 않습니다." });
+      return res.json({ message: "ID or password does not match." });
     }
 
     // 비밀번호 해싱
@@ -65,24 +65,24 @@ router.post("/login", async (req, res) => {
     ).toString("base64");
 
     // 디버깅 로그 추가
-    console.log("로그인 시 입력된 비밀번호:", req.body.password);
-    console.log("로그인 시 해싱된 비밀번호:", hashedPassword);
-    console.log("데이터베이스 저장 비밀번호:", user.password);
+    console.log("Password entered at login:", req.body.password);
+    console.log("Password Hashed at Login:", hashedPassword);
+    console.log("Database storage password:", user.password);
 
     if (hashedPassword === user.password) {
-      console.log("비밀번호 일치: 로그인 성공");
+      console.log("Password match: Login successful");
       await User.updateOne(
         { email: req.body.email },
         { $set: { loginCnt: 0 } }
       );
       req.session.email = user.email;
       return res.json({
-        message: "로그인 되었습니다!",
+        message: "You're logged in!",
         _id: user._id,
         email: user.email,
       });
     } else {
-      console.log("비밀번호 불일치: 로그인 실패");
+      console.log("Password mismatch: Login failed");
       const updatedLoginCnt = (user.loginCnt || 0) + 1;
 
       if (updatedLoginCnt >= 5) {
@@ -92,7 +92,7 @@ router.post("/login", async (req, res) => {
         );
         res.json({
           message:
-            "아이디나 패스워드가 5회 이상 일치하지 않아 계정이 잠겼습니다. 고객센터에 문의 바랍니다.",
+            "The account was locked because the ID or password did not match more than 5 times. Please contact the customer service center.",
         });
       } else {
         await User.updateOne(
@@ -100,13 +100,13 @@ router.post("/login", async (req, res) => {
           { $set: { loginCnt: updatedLoginCnt } }
         );
         res.json({
-          message: "아이디나 패스워드가 일치하지 않습니다.",
+          message: "ID or password does not match.",
         });
       }
     }
   } catch (err) {
-    console.error("로그인 오류:", err);
-    res.json({ message: "로그인 실패" });
+    console.error("Login error:", err);
+    res.json({ message: "Login fail" });
   }
 });
 
@@ -125,7 +125,7 @@ router.post("/delete", async (req, res) => {
     await User.deleteOne({ _id: req.body._id });
     res.json({ message: true });
   } catch (err) {
-    console.error("회원 삭제 오류:", err);
+    console.error("Error deleting members:", err);
     res.json({ message: false });
   }
 });
@@ -139,7 +139,7 @@ router.post("/update", async (req, res) => {
     );
     res.json({ message: true });
   } catch (err) {
-    console.error("회원 정보 수정 오류:", err);
+    console.error("rror modifying membership information:", err);
     res.json({ message: false });
   }
 });
@@ -151,7 +151,7 @@ router.post("/add", async (req, res) => {
     await user.save();
     res.json({ message: true });
   } catch (err) {
-    console.error("회원 추가 오류:", err);
+    console.error("Error adding members:", err);
     res.json({ message: false });
   }
 });
@@ -162,7 +162,7 @@ router.post("/getAllMember", async (req, res) => {
     const users = await User.find({});
     res.json({ message: users });
   } catch (err) {
-    console.error("회원 목록 가져오기 오류:", err);
+    console.error("Error getting membership list:", err);
     res.json({ message: false });
   }
 });
