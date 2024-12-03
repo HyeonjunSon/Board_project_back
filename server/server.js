@@ -6,6 +6,8 @@ const connect = require("../schemas");
 const { WebSocketServer } = require("ws");
 const mongoose = require("mongoose");
 
+require("dotenv").config();
+
 connect();
 
 // MongoDB 연결
@@ -56,7 +58,7 @@ app.use("/member", require("../routes/memberRouter"));
 app.use("/board", require("../routes/boardRouter"));
 
 // HTTP 서버 시작
-const server = app.listen(PORT||3000, () => {
+const server = app.listen(process.env.PORT||3000, () => {
   console.log("HTTP server listening on port 8080...");
 });
 
