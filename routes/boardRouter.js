@@ -9,12 +9,12 @@ router.post("/delete", async (req, res) => {
   try {
     const result = await Board.deleteOne({ _id: req.body._id });
     if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "삭제할 게시글을 찾을 수 없습니다." });
+      return res.status(404).json({ message: "No posts found to delete." });
     }
-    res.json({ message: "게시글이 삭제되었습니다." });
+    res.json({ message: "Post deleted." });
   } catch (err) {
-    console.error("게시글 삭제 실패: ", err);
-    res.status(500).json({ message: "게시글 삭제 실패", error: err.message });
+    console.error("Failed to delete post: ", err);
+    res.status(500).json({ message: "Failed to delete post", error: err.message });
   }
 });
 
@@ -30,7 +30,7 @@ router.post("/update", async (req, res) => {
         },
       }
     );
-    res.json({ message: "게시글이 수정되었습니다." });
+    res.json({ message: "Post has been modified." });
   } catch (err) {
     console.error(err);
     res.json({ message: false });
@@ -43,7 +43,7 @@ router.post("/write", async (req, res) => {
     console.log("POST /write 요청 데이터:", req.body);
 
     if (!mongoose.Types.ObjectId.isValid(req.body._id)) {
-      return res.status(400).json({ message: "유효하지 않은 사용자 ID입니다." });
+      return res.status(400).json({ message: "Invalid user ID." });
     }
 
     const obj = {
@@ -52,14 +52,14 @@ router.post("/write", async (req, res) => {
       content: req.body.content,
     };
 
-    console.log("MongoDB에 저장할 데이터:", obj);
+    console.log("Data to store in MongoDB:", obj);
 
     const board = new Board(obj);
     await board.save();
-    res.json({ message: "게시글이 업로드되었습니다." });
+    res.json({ message: "Your post has been uploaded." });
   } catch (err) {
-    console.error("데이터 저장 실패:", err); // 디버깅용 에러 로그
-    res.status(500).json({ message: "서버 내부 오류", error: err.message });
+    console.error("Failed to save data:", err); // 디버깅용 에러 로그
+    res.status(500).json({ message: "Server internal error", error: err.message });
   }
 });
 
@@ -70,15 +70,15 @@ router.post("/getBoardList", async (req, res) => {
     const _id = req.body._id;
 
     if (!mongoose.Types.ObjectId.isValid(_id)) {
-      return res.status(400).json({ message: "유효하지 않은 사용자 ID입니다." });
+      return res.status(400).json({ message: "Invalid user ID." });
     }
 
     const boards = await Board.find({ writer: _id }).sort({ createdAt: -1 });
     res.json({ list: boards });
   } catch (err) {
-    console.error("게시글 목록 가져오기 실패:", err);
+    console.error("Failed to get a list of posts:", err);
     res.status(500).json({
-      message: "게시글 목록 가져오기 실패",
+      message: "Failed to get a list of posts",
       error: err.message,
     });
   }
@@ -90,15 +90,15 @@ router.post("/getBoardList", async (req, res) => {
 router.get("/detail/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    console.log("상세보기 요청 ID: ", id);
+    console.log("Request for a detailed view ID: ", id);
     const board = await Board.findById(id);
     if (!board) {
-      return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+      return res.status(404).json({ message: "Post not found." });
     }
     res.json({ board });
   } catch (err) {
-    console.error("게시글 상세보기 실패: ", err);
-    res.status(500).json({ message: "게시글 상세보기 실패", error: err.message });
+    console.error("Post Details Failed: ", err);
+    res.status(500).json({ message: "Post Details Failed", error: err.message });
   }
 });
 
