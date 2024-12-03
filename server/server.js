@@ -26,7 +26,13 @@ const corsOptions = {
 
 // 미들웨어 설정
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.sendStatus(200);
+});
 
 
 // Express 세션 설정
@@ -48,8 +54,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // 요청 디버깅용 미들웨어
 app.use((req, res, next) => {
-  console.log(`Request received: ${req.method} ${req.url}`);
-  next();
+  if (req.method === "GET" && req.url === "/member/login") {
+    res.status(404).send("이 페이지는 GET 요청을 지원하지 않습니다.");
+  } else {
+    next();
+  }
 });
 
 // 기본 라우트
