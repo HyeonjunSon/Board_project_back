@@ -17,10 +17,10 @@ mongoose.connection.on("error", (err) => {
 });
 
 // CORS 옵션 설정
-const corsOptions = {
-  origin: "http://localhost:3000",
-  credentials: true,
-};
+// const corsOptions = {
+//   origin: "http://localhost:3000",
+//   credentials: true,
+// };
 
 // Express 세션 설정
 app.use(
@@ -36,7 +36,7 @@ app.use(
 );
 
 // 미들웨어 설정
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
