@@ -20,12 +20,13 @@ mongoose.connection.on("error", (err) => {
 
 //CORS 옵션 설정
 const corsOptions = {
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
+origin: process.env.FRONTEND_URL || "https://incandescent-tartufo-b29b25.netlify.app", 
+  credentials: true, 
 };
 
 // 미들웨어 설정
 app.use(cors(corsOptions));
+
 app.options("*", (req, res) => {
   res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
