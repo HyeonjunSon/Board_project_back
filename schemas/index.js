@@ -3,10 +3,7 @@ const mongoose = require("mongoose");
 module.exports = () => {
   const connect = () => {
     mongoose
-      .connect("mongodb+srv://Ths1061205:oeRt8MxHHu0c9BnD@hyeonjun.yl4qx.mongodb.net/project?retryWrites=true&w=majority&appName=Hyeonjun", {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      })
+      .connect(process.env.DATABASE_URL)
       .then(() => console.log("MongoDB 연결 성공 (게시판 데이터베이스)"))
       .catch((err) => {
         console.error("MongoDB 연결 실패: ", err.message);
