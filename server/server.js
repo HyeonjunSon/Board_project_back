@@ -42,9 +42,10 @@ app.use(
     resave: false,
     saveUninitialized: true,
     secret: "Hyeonjun",
+    store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL }),
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: true, // 배포 환경에서 HTTPS라면 true로 설정
     },
   })
 );
