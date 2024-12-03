@@ -25,9 +25,9 @@ const corsOptions = {
 };
 
 // 미들웨어 설정
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 
 // Express 세션 설정
 app.use(
@@ -41,6 +41,9 @@ app.use(
     },
   })
 );
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 // 요청 디버깅용 미들웨어
